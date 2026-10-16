@@ -214,6 +214,21 @@
     text-transform: uppercase; letter-spacing: .24em;
     color: var(--ink-soft); margin-bottom: 6px;
   }
+  .lang {
+    display: flex; justify-content: flex-end; gap: 4px;
+    margin: -12px -6px 14px 0;
+  }
+  .lang button {
+    font: inherit; font-size: .88rem; letter-spacing: .02em;
+    min-height: 40px; min-width: 44px; padding: 6px 14px;
+    border: 1px solid transparent; border-radius: 999px;
+    background: none; color: var(--ink-soft); cursor: pointer;
+  }
+  .lang button:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .lang button[aria-pressed="true"] {
+    color: var(--ink); border-color: var(--field-line); background: var(--choice-bg);
+    text-decoration: none; font-weight: 500;
+  }
   .preview-bar {
     position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10;
     background: #304B3A; color: #F8F6EF; border-radius: 999px;
@@ -281,15 +296,17 @@
    ============================================================ */
 const CONFIG = {
   couple: "Rebecka Navarro & Osbaldo Vera",
-  rsvpDeadline: "March 3, 2027",
+  // Text with { en: ..., es: ... } shows the matching language. Plain text shows in both.
+  rsvpDeadline: { en: "March 3, 2027", es: "3 de marzo de 2027" },
   ceremony: {
-    time: "6:00 AM, Saturday, August 7, 2027",
+    time: { en: "6:00 AM, Saturday, August 7, 2027", es: "6:00 a. m., sábado 7 de agosto de 2027" },
     place: "[Ceremony location name]",
     address: "[Ceremony address], Estes Park, CO",
-    note: "[Arrival note, e.g. please arrive by 5:40 AM and dress warmly]"
+    note: { en: "[Arrival note, e.g. please arrive by 5:40 AM and dress warmly]",
+            es: "[Nota de llegada, p. ej. llega a las 5:40 a. m. y abrígate bien]" }
   },
   celebration: {
-    time: "[Celebration time], Saturday, August 7, 2027",
+    time: { en: "[Celebration time], Saturday, August 7, 2027", es: "[Hora de la celebración], sábado 7 de agosto de 2027" },
     place: "[Celebration venue name]",
     address: "[Celebration address], Estes Park, CO",
     note: ""
@@ -301,6 +318,160 @@ const CONFIG = {
 };
 
 /* ============================================================ */
+
+/* ---------- Languages: American English and Mexican Spanish ---------- */
+const TEXT = {
+  en: {
+    back: "← Back", next: "Next", choose: "Choose…", checking: "Checking…", yes: "Yes", no: "No",
+    netErr: "We couldn't check right now. Check your connection and try again.",
+    weddingOf: "We're getting married!",
+    lede: "Sunrise ceremony on August 7, 2027 in Estes Park, Colorado.",
+    rsvpBy: "Please RSVP by {date}.",
+    headsUpLabel: "Heads up:",
+    headsUp: "August is peak season in Estes Park and lodging books up fast. Please look into hotels or Airbnbs before you answer.",
+    start: "I've looked into lodging, let's go&nbsp;→",
+    findLink: "Already RSVP'd? Find my RSVP",
+    nameQ: "What's your government name?", nameHint: "", fullName: "Full name",
+    nameErr: "Enter your full name to continue.",
+    nameNetErr: "We couldn't check your name right now. Check your connection and try again.",
+    partnerQ: "Will you be bringing a significant other?",
+    partnerNameQ: "What's their government name?", partnerNameHint: "", partnerNameLabel: "Their full name",
+    partnerNameErr: "Enter their full name to continue.",
+    kidsQ: "Will you be bringing your kids?",
+    kidsInfoQ: "How many kids, and how old are they?", kidsCount: "Number of kids",
+    kidAge: "Kid {n}'s age", kidAgeOne: "Their age", under1: "Under 1", adult: "18+",
+    kidsCountErr: "Choose how many kids are coming.", kidsAgesErr: "Choose an age for each kid.", kidAgeErr: "Choose your kid's age.",
+    sunriseQ: "Our ceremony is at sunrise, which means a 6:00 AM start.",
+    sunriseHint: "Space is very limited, so please answer honestly: will you be there?",
+    sunriseYes: "Yes, I'll be there at 6:00 AM", sunriseNo: "No, I'll sit this one out",
+    sureQ: "ARE YOU SURE?",
+    sureHint: "There are only 15 spots available for the sunrise ceremony, so please only say yes if you'll truly be there at 6:00 AM.",
+    sureYes: "Yes, I'm sure", sureNo: "No, I'll skip the sunrise ceremony",
+    whoQ: "Who's joining you at sunrise?",
+    "Just me": "Just me", "Me + my significant other": "Me + my significant other", "Me + my kids": "Me + my kids", "All of us": "All of us",
+    sunriseKidsQ: "How many of your kids will come to the sunrise ceremony?", allKids: "All {n}",
+    celebrateQ: "No worries! Will you still be joining us in Colorado to celebrate?",
+    celebrateYes: "Yes, I'll be at the celebration", celebrateNo: "No, I can't make it",
+    contactQDecline: "One last thing: what's your email or phone number?",
+    contactHintDecline: "We'll only use it to make sure nobody else can change your RSVP.",
+    contactQ: "What's the best email or phone number for updates?", contactLabel: "Email or phone",
+    saveChanges: "Save my changes", sendRsvp: "Send my RSVP",
+    savingChanges: "Saving your changes…", sendingRsvp: "Sending your RSVP…",
+    contactEmpty: "Enter an email or phone number so we can reach you.",
+    emailBad: "That email doesn't look right. Check it and try again, like name@example.com.",
+    contactBad: "Enter a valid email, like name@example.com, or a phone number with area code.",
+    existsErr: "There's already an RSVP under this name. Go back to the start and tap \"Already RSVP'd? Find my RSVP\" to see or change it.",
+    saveFailed: "Your changes didn't save. Check your connection and try again.",
+    sendFailed: "Your RSVP didn't send. Check your connection and try again.",
+    lookupQ: "Already RSVP'd? Let's find you.", lookupHint: "Enter the full name you used on your RSVP.",
+    findBtn: "Find my RSVP", finding: "Finding your RSVP…",
+    notFound: "We couldn't find an RSVP under that name. Check the spelling, or go back to RSVP now.",
+    alreadyQ: "Looks like you've already RSVP'd!", welcomeBack: "Welcome back, {name}!",
+    foundUnder: "We found an RSVP under {name}.", foundYours: "We found your RSVP.", whatDo: "What would you like to do?",
+    cancelledUnder: "We found an RSVP under {name}, but it's currently cancelled. Want to RSVP again?",
+    cancelledYours: "Your RSVP is currently cancelled. Want to RSVP again?",
+    updateRsvp: "Update my RSVP", seeInfo: "See ceremony information", editRsvp: "Edit my RSVP",
+    verifyQ: "Confirm it's you", verifyHint: "To keep your RSVP safe, enter the email or phone number you used on it.",
+    continue: "Continue", verifyEmpty: "Enter the email or phone number from your RSVP.",
+    noMatch: "That doesn't match the email or phone number on this RSVP.",
+    editQ: "What would you like to change?", editGuests: "My significant other and kids", cancelRsvp: "Cancel my RSVP",
+    cancelQ: "Cancel your RSVP?", cancelHint: "This frees up your spot. You can come back and RSVP again before {date}.",
+    cancelYes: "Yes, cancel my RSVP", cancelNo: "No, keep my RSVP",
+    cancelFailed: "Your RSVP wasn't cancelled. Check your connection and try again.",
+    cancelledTitle: "Your RSVP has been cancelled.",
+    missYouRegistry: "We'll miss you! If you'd like to send love from afar, here's our registry.",
+    openRegistry: "Open our registry", coming2030: "Coming 2030",
+    catholic: "Don't worry, a traditional Catholic wedding is on the way!",
+    seeYou: "See you at sunrise!", ceremony: "Ceremony", celebration: "Celebration",
+    updated: "Your RSVP has been updated.",
+    celebrateTitle: "Can't wait to celebrate with you!",
+    missYou: "We'll miss you!", registryLede: "If you'd like to send love from afar, here's our registry."
+  },
+  es: {
+    back: "← Regresar", next: "Siguiente", choose: "Elige…", checking: "Verificando…", yes: "Sí", no: "No",
+    netErr: "No pudimos verificar en este momento. Revisa tu conexión e inténtalo de nuevo.",
+    weddingOf: "¡Nos casamos!",
+    lede: "Ceremonia al amanecer el 7 de agosto de 2027 en Estes Park, Colorado.",
+    rsvpBy: "Por favor confirma tu asistencia antes del {date}.",
+    headsUpLabel: "Aviso:",
+    headsUp: "Agosto es temporada alta en Estes Park y el hospedaje se agota rápido. Por favor busca hoteles o Airbnbs antes de responder.",
+    start: "Ya busqué hospedaje, ¡vamos!&nbsp;→",
+    findLink: "¿Ya confirmaste? Busca tu confirmación",
+    nameQ: "¿Cuál es tu nombre completo?", nameHint: "Como aparece en tu identificación oficial.", fullName: "Nombre completo",
+    nameErr: "Escribe tu nombre completo para continuar.",
+    nameNetErr: "No pudimos verificar tu nombre en este momento. Revisa tu conexión e inténtalo de nuevo.",
+    partnerQ: "¿Vas a venir con tu pareja?",
+    partnerNameQ: "¿Cuál es el nombre completo de tu pareja?", partnerNameHint: "Como aparece en su identificación oficial.",
+    partnerNameLabel: "Nombre completo de tu pareja",
+    partnerNameErr: "Escribe el nombre completo de tu pareja para continuar.",
+    kidsQ: "¿Vas a venir con tus hijos?",
+    kidsInfoQ: "¿Cuántos hijos vienen y qué edad tienen?", kidsCount: "Número de hijos",
+    kidAge: "Edad de tu hijo/a {n}", kidAgeOne: "Edad de tu hijo/a", under1: "Menos de 1", adult: "18 o más",
+    kidsCountErr: "Elige cuántos hijos vienen.", kidsAgesErr: "Elige la edad de cada hijo/a.", kidAgeErr: "Elige la edad de tu hijo/a.",
+    sunriseQ: "Nuestra ceremonia es al amanecer, así que empieza a las 6:00 a. m.",
+    sunriseHint: "El espacio es muy limitado, así que por favor responde con sinceridad: ¿vas a estar ahí?",
+    sunriseYes: "Sí, ahí estaré a las 6:00 a. m.", sunriseNo: "No, esta vez paso",
+    sureQ: "¿ESTÁS SEGURO(A)?",
+    sureHint: "Solo hay 15 lugares para la ceremonia al amanecer, así que por favor di que sí solo si de verdad vas a estar ahí a las 6:00 a. m.",
+    sureYes: "Sí, estoy seguro(a)", sureNo: "No, mejor no voy a la ceremonia al amanecer",
+    whoQ: "¿Quién te acompaña al amanecer?",
+    "Just me": "Solo yo", "Me + my significant other": "Yo + mi pareja", "Me + my kids": "Yo + mis hijos", "All of us": "Todos nosotros",
+    sunriseKidsQ: "¿Cuántos de tus hijos vendrán a la ceremonia al amanecer?", allKids: "Los {n}",
+    celebrateQ: "¡No te preocupes! ¿Aun así nos acompañas a celebrar en Colorado?",
+    celebrateYes: "Sí, ahí estaré en la celebración", celebrateNo: "No, no voy a poder ir",
+    contactQDecline: "Una última cosa: ¿cuál es tu correo o número de teléfono?",
+    contactHintDecline: "Solo lo usaremos para que nadie más pueda cambiar tu confirmación.",
+    contactQ: "¿A qué correo o teléfono te mandamos las novedades?", contactLabel: "Correo o teléfono",
+    saveChanges: "Guardar mis cambios", sendRsvp: "Enviar mi confirmación",
+    savingChanges: "Guardando tus cambios…", sendingRsvp: "Enviando tu confirmación…",
+    contactEmpty: "Escribe un correo o número de teléfono para poder contactarte.",
+    emailBad: "Ese correo no parece correcto. Revísalo e inténtalo de nuevo, por ejemplo nombre@ejemplo.com.",
+    contactBad: "Escribe un correo válido, como nombre@ejemplo.com, o un número de teléfono con lada.",
+    existsErr: "Ya hay una confirmación con este nombre. Regresa al inicio y toca \"¿Ya confirmaste? Busca tu confirmación\" para verla o cambiarla.",
+    saveFailed: "Tus cambios no se guardaron. Revisa tu conexión e inténtalo de nuevo.",
+    sendFailed: "Tu confirmación no se envió. Revisa tu conexión e inténtalo de nuevo.",
+    lookupQ: "¿Ya confirmaste? Vamos a buscarte.", lookupHint: "Escribe el nombre completo que usaste al confirmar.",
+    findBtn: "Buscar mi confirmación", finding: "Buscando tu confirmación…",
+    notFound: "No encontramos una confirmación con ese nombre. Revisa cómo lo escribiste o regresa para confirmar ahora.",
+    alreadyQ: "¡Parece que ya confirmaste!", welcomeBack: "¡Qué gusto verte de nuevo, {name}!",
+    foundUnder: "Encontramos una confirmación a nombre de {name}.", foundYours: "Encontramos tu confirmación.", whatDo: "¿Qué te gustaría hacer?",
+    cancelledUnder: "Encontramos una confirmación a nombre de {name}, pero está cancelada. ¿Quieres confirmar de nuevo?",
+    cancelledYours: "Tu confirmación está cancelada. ¿Quieres confirmar de nuevo?",
+    updateRsvp: "Actualizar mi confirmación", seeInfo: "Ver la información de la ceremonia", editRsvp: "Editar mi confirmación",
+    verifyQ: "Confirma que eres tú", verifyHint: "Para proteger tu confirmación, escribe el correo o teléfono que usaste.",
+    continue: "Continuar", verifyEmpty: "Escribe el correo o teléfono de tu confirmación.",
+    noMatch: "No coincide con el correo o teléfono de esta confirmación.",
+    editQ: "¿Qué te gustaría cambiar?", editGuests: "Mi pareja e hijos", cancelRsvp: "Cancelar mi confirmación",
+    cancelQ: "¿Cancelar tu confirmación?", cancelHint: "Esto libera tu lugar. Puedes regresar y confirmar de nuevo antes del {date}.",
+    cancelYes: "Sí, cancelar mi confirmación", cancelNo: "No, conservar mi confirmación",
+    cancelFailed: "Tu confirmación no se canceló. Revisa tu conexión e inténtalo de nuevo.",
+    cancelledTitle: "Tu confirmación fue cancelada.",
+    missYouRegistry: "¡Te vamos a extrañar! Si quieres mandarnos cariño a la distancia, aquí está nuestra mesa de regalos.",
+    openRegistry: "Ver nuestra mesa de regalos", coming2030: "Próximamente en 2030",
+    catholic: "¡No te preocupes, viene una boda católica tradicional!",
+    seeYou: "¡Nos vemos al amanecer!", ceremony: "Ceremonia", celebration: "Celebración",
+    updated: "Tu confirmación se actualizó.",
+    celebrateTitle: "¡Ya queremos celebrar contigo!",
+    missYou: "¡Te vamos a extrañar!", registryLede: "Si quieres mandarnos cariño a la distancia, aquí está nuestra mesa de regalos."
+  }
+};
+let lang = "en";
+try { lang = localStorage.getItem("lang") || ""; } catch {}
+if (lang !== "en" && lang !== "es") lang = /^es\b/i.test(navigator.language || "") ? "es" : "en";
+document.documentElement.lang = lang === "es" ? "es-MX" : "en-US";
+// Text for the current language. {name}-style blanks are filled from vars.
+function t(key, vars) {
+  let s = (TEXT[lang] && TEXT[lang][key]) ?? TEXT.en[key] ?? key;
+  if (vars) Object.keys(vars).forEach(k => { s = s.split("{" + k + "}").join(vars[k]); });
+  return s;
+}
+// CONFIG values may be plain text or { en, es }.
+const L = v => (v && typeof v === "object") ? (v[lang] ?? v.en ?? "") : (v ?? "");
+function setLang(next) {
+  lang = next;
+  document.documentElement.lang = lang === "es" ? "es-MX" : "en-US";
+  try { localStorage.setItem("lang", lang); } catch {}
+}
 
 const state = {};
 const trail = [];
@@ -357,6 +528,7 @@ let show = function (id) {
   stage.classList.remove("enter"); void stage.offsetWidth; stage.classList.add("enter");
   steps[id]();
   backBtn.hidden = id === "welcome";
+  backBtn.textContent = t("back");
   const target = stage.querySelector("input, select") || stage.querySelector("h1, h2");
   if (target) target.focus({ preventScroll: true });
   window.scrollTo({ top: 0 });
@@ -406,19 +578,21 @@ function formStep(title, hint, fieldsHtml, btnLabel, onSubmit) {
   }));
 }
 
-const yesNo = [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }];
+const yesNo = () => [{ label: t("yes"), value: "yes" }, { label: t("no"), value: "no" }];
 
 function detail(label, d) {
-  return `<section class="detail"><h3>${label}</h3><p class="when">${esc(d.time)}</p>
-    <p>${esc(d.place)}<br>${esc(d.address)}</p>${d.note ? `<p class="hint">${esc(d.note)}</p>` : ""}</section>`;
+  const note = L(d.note);
+  return `<section class="detail"><h3>${label}</h3><p class="when">${esc(L(d.time))}</p>
+    <p>${esc(L(d.place))}<br>${esc(L(d.address))}</p>${note ? `<p class="hint">${esc(note)}</p>` : ""}</section>`;
 }
 
 function whoOptions() {
-  const opts = [{ label: "Just me", value: "Just me" }];
-  if (state.partner === "yes") opts.push({ label: "Me + my significant other", value: "Me + my significant other" });
-  if (state.kids === "yes") opts.push({ label: "Me + my kids", value: "Me + my kids" });
-  if (state.partner === "yes" && state.kids === "yes") opts.push({ label: "All of us", value: "All of us" });
-  return opts;
+  // Saved answers stay in English so your Sheet is consistent; only the button text is translated.
+  const values = ["Just me"];
+  if (state.partner === "yes") values.push("Me + my significant other");
+  if (state.kids === "yes") values.push("Me + my kids");
+  if (state.partner === "yes" && state.kids === "yes") values.push("All of us");
+  return values.map(v => ({ label: t(v), value: v }));
 }
 
 /* ---------- RSVP storage ----------
@@ -517,7 +691,7 @@ function loadRecord(r) {
 }
 
 function updatedNote() {
-  return state.justUpdated ? `<p class="hint">Your RSVP has been updated.</p>` : "";
+  return state.justUpdated ? `<p class="hint">${t("updated")}</p>` : "";
 }
 
 function hero(id, pos) {
@@ -527,14 +701,24 @@ function hero(id, pos) {
 
 const steps = {
   welcome() {
-    stage.innerHTML = hero("welcome", "50% 92%") + `
+    stage.innerHTML = `<div class="lang" role="group" aria-label="Language / Idioma">
+        <button type="button" data-lang="en" lang="en" aria-pressed="${lang === "en"}">English</button>
+        <button type="button" data-lang="es" lang="es" aria-pressed="${lang === "es"}">Español</button>
+      </div>` + hero("welcome", "50% 92%") + `
       <p class="couple">${esc(CONFIG.couple)}</p>
-      <h1 tabindex="-1">We're getting married!</h1>
-      <p class="lede">Sunrise ceremony on August 7, 2027 in Estes Park, Colorado.</p>
-      <p>Please RSVP by ${esc(CONFIG.rsvpDeadline)}.</p>
-      <div class="note"><p><strong>Heads up:</strong> August is peak season in Estes Park and lodging books up fast. Please look into hotels or Airbnbs before you answer.</p></div>
-      <button class="primary" type="button" id="start">I've looked into lodging, let's go&nbsp;→</button>
-      <button class="secondary" type="button" id="lookup">Already RSVP'd? Find my RSVP</button>`;
+      <h1 tabindex="-1">${t("weddingOf")}</h1>
+      <p class="lede">${t("lede")}</p>
+      <p>${t("rsvpBy", { date: esc(L(CONFIG.rsvpDeadline)) })}</p>
+      <div class="note"><p><strong>${t("headsUpLabel")}</strong> ${t("headsUp")}</p></div>
+      <button class="primary" type="button" id="start">${t("start")}</button>
+      <button class="secondary" type="button" id="lookup">${t("findLink")}</button>`;
+    stage.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+      if (b.dataset.lang === lang) return;
+      setLang(b.dataset.lang);
+      show("welcome");
+      const again = stage.querySelector(`.lang button[data-lang="${lang}"]`);
+      if (again) again.focus({ preventScroll: true });
+    }));
     document.getElementById("start").addEventListener("click", () => {
       Object.keys(state).forEach(k => delete state[k]);
       go("name");
@@ -543,56 +727,58 @@ const steps = {
   },
 
   name() {
-    formStep("What's your government name?", "", field("guestName", "Full name", "text", 'autocomplete="name"'), "Next", async (f, box) => {
+    formStep(t("nameQ"), t("nameHint"), field("guestName", t("fullName"), "text", 'autocomplete="name"'), t("next"), async (f, box) => {
       const v = f.guestName.value.trim();
-      if (!v) return "Enter your full name to continue.";
+      if (!v) return t("nameErr");
       state.guestName = v;
       // Check right away whether this name has already RSVP'd.
       const btn = box.querySelector(".primary");
-      btn.disabled = true; btn.textContent = "Checking…";
+      btn.disabled = true; btn.textContent = t("checking");
       const r = await api({ action: "find", name: v });
-      btn.disabled = false; btn.textContent = "Next";
-      if (!r || !r.ok) return "We couldn't check your name right now. Check your connection and try again.";
+      btn.disabled = false; btn.textContent = t("next");
+      if (!r || !r.ok) return t("nameNetErr");
       if (r.found) { state.lookupName = v; state.lookupResult = r; state.foundVia = "name"; go("found"); return; }
       go("partner");
     });
   },
 
   partner() {
-    choiceStep("partner", "Will you be bringing a significant other?", "", yesNo, v => {
+    choiceStep("partner", t("partnerQ"), "", yesNo(), v => {
       if (v === "yes") go("partnerName");
       else { delete state.partnerName; go("kids"); }
     });
   },
 
   partnerName() {
-    formStep("What's their government name?", "", field("partnerName", "Their full name"), "Next", f => {
+    formStep(t("partnerNameQ"), t("partnerNameHint"), field("partnerName", t("partnerNameLabel")), t("next"), f => {
       const v = f.partnerName.value.trim();
-      if (!v) return "Enter their full name to continue.";
+      if (!v) return t("partnerNameErr");
       state.partnerName = v; go("kids");
     });
   },
 
   kids() {
-    choiceStep("kids", "Will you be bringing your kids?", "", yesNo, v => {
+    choiceStep("kids", t("kidsQ"), "", yesNo(), v => {
       if (v === "yes") go("kidsInfo");
       else { delete state.kidsCount; delete state.kidsAges; go("sunrise"); }
     });
   },
 
   kidsInfo() {
+    // Ages are saved in English ("Under 1", "18+") so your Sheet is consistent.
     const ageOpts = ["Under 1", ...Array.from({ length: 17 }, (_, i) => String(i + 1)), "18+"];
+    const ageLabel = a => a === "Under 1" ? t("under1") : a === "18+" ? t("adult") : a;
     const saved = Array.isArray(state.kidsAges) ? state.kidsAges : [];
-    formStep("How many kids, and how old are they?", "",
-      `<label class="field"><span>Number of kids</span><select name="kidsCount">
-        <option value="">Choose…</option>
+    formStep(t("kidsInfoQ"), "",
+      `<label class="field"><span>${t("kidsCount")}</span><select name="kidsCount">
+        <option value="">${t("choose")}</option>
         ${[1,2,3,4].map(n => `<option value="${n}"${state.kidsCount === n ? " selected" : ""}>${n}</option>`).join("")}
       </select></label><div class="ages" id="ages"></div>`,
-      "Next", (f, box) => {
+      t("next"), (f, box) => {
         const n = parseInt(f.kidsCount.value, 10);
-        if (!n) return "Choose how many kids are coming.";
+        if (!n) return t("kidsCountErr");
         const ages = [...box.querySelectorAll("select[data-age]")].map(s => s.value);
-        if (ages.some(a => !a)) return n > 1 ? "Choose an age for each kid." : "Choose your kid's age.";
+        if (ages.some(a => !a)) return n > 1 ? t("kidsAgesErr") : t("kidAgeErr");
         state.kidsCount = n; state.kidsAges = ages; go("sunrise");
       });
     const countSel = stage.querySelector('select[name="kidsCount"]');
@@ -602,9 +788,9 @@ const steps = {
       const keep = picked.length ? picked : saved;
       const n = parseInt(countSel.value, 10) || 0;
       agesBox.innerHTML = Array.from({ length: n }, (_, i) =>
-        `<label class="field"><span>${n > 1 ? `Kid ${i + 1}'s age` : "Their age"}</span>
-          <select data-age name="age${i}"><option value="">Choose…</option>
-          ${ageOpts.map(a => `<option value="${a}"${keep[i] === a ? " selected" : ""}>${a}</option>`).join("")}
+        `<label class="field"><span>${n > 1 ? t("kidAge", { n: i + 1 }) : t("kidAgeOne")}</span>
+          <select data-age name="age${i}"><option value="">${t("choose")}</option>
+          ${ageOpts.map(a => `<option value="${a}"${keep[i] === a ? " selected" : ""}>${ageLabel(a)}</option>`).join("")}
           </select></label>`).join("");
     }
     const err = stage.querySelector(".error");
@@ -614,10 +800,8 @@ const steps = {
   },
 
   sunrise() {
-    choiceStep("sunrise",
-      "Our ceremony is at sunrise, which means a 6:00 AM start.",
-      "Space is very limited, so please answer honestly: will you be there?",
-      [{ label: "Yes, I'll be there at 6:00 AM", value: "yes" }, { label: "No, I'll sit this one out", value: "no" }],
+    choiceStep("sunrise", t("sunriseQ"), t("sunriseHint"),
+      [{ label: t("sunriseYes"), value: "yes" }, { label: t("sunriseNo"), value: "no" }],
       v => {
         if (v === "yes") {
           go("sunriseConfirm");
@@ -628,9 +812,8 @@ const steps = {
   },
 
   sunriseConfirm() {
-    choiceStep("sunriseSure", "ARE YOU SURE?",
-      "There are only 15 spots available for the sunrise ceremony, so please only say yes if you'll truly be there at 6:00 AM.",
-      [{ label: "Yes, I'm sure", value: "yes" }, { label: "No, I'll skip the sunrise ceremony", value: "no" }],
+    choiceStep("sunriseSure", t("sureQ"), t("sureHint"),
+      [{ label: t("sureYes"), value: "yes" }, { label: t("sureNo"), value: "no" }],
       v => {
         if (v === "yes") {
           state.sunrise = "yes";
@@ -646,7 +829,7 @@ const steps = {
   },
 
   sunriseWho() {
-    choiceStep("sunriseWho", "Who's joining you at sunrise?", "", whoOptions(), v => {
+    choiceStep("sunriseWho", t("whoQ"), "", whoOptions(), v => {
       const withKids = v === "Me + my kids" || v === "All of us";
       if (withKids && state.kidsCount > 1) go("sunriseKids");
       else { state.sunriseKids = withKids ? 1 : 0; go("contact"); }
@@ -655,43 +838,42 @@ const steps = {
 
   sunriseKids() {
     const opts = Array.from({ length: state.kidsCount }, (_, i) => ({
-      label: i + 1 === state.kidsCount ? `All ${i + 1}` : String(i + 1), value: i + 1
+      label: i + 1 === state.kidsCount ? t("allKids", { n: i + 1 }) : String(i + 1), value: i + 1
     }));
-    choiceStep("sunriseKids", "How many of your kids will come to the sunrise ceremony?", "", opts, () => go("contact"));
+    choiceStep("sunriseKids", t("sunriseKidsQ"), "", opts, () => go("contact"));
   },
 
   celebrate() {
-    choiceStep("celebrate", "No worries! Will you still be joining us in Colorado to celebrate?", "",
-      [{ label: "Yes, I'll be at the celebration", value: "yes" }, { label: "No, I can't make it", value: "no" }],
+    choiceStep("celebrate", t("celebrateQ"), "",
+      [{ label: t("celebrateYes"), value: "yes" }, { label: t("celebrateNo"), value: "no" }],
       () => go("contact"));
   },
 
   contact() {
     const declining = state.sunrise !== "yes" && state.celebrate === "no";
-    formStep(declining ? "One last thing: what's your email or phone number?" : "What's the best email or phone number for updates?",
-      declining ? "We'll only use it to make sure nobody else can change your RSVP." : "",
-      field("contact", "Email or phone", "text", 'autocomplete="email"'),
-      state.editing ? "Save my changes" : "Send my RSVP", async (f, form) => {
+    formStep(declining ? t("contactQDecline") : t("contactQ"),
+      declining ? t("contactHintDecline") : "",
+      field("contact", t("contactLabel"), "text", 'autocomplete="email"'),
+      state.editing ? t("saveChanges") : t("sendRsvp"), async (f, form) => {
         const v = f.contact.value.trim();
-        if (!v) return "Enter an email or phone number so we can reach you.";
+        if (!v) return t("contactEmpty");
         const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(v);
         const digits = v.replace(/\D/g, "");
         const isPhone = /^[\d\s().+-]+$/.test(v) && digits.length >= 10 && digits.length <= 15;
-        if (v.includes("@") && !isEmail) return "That email doesn't look right. Check it and try again, like name@example.com.";
-        if (!isEmail && !isPhone) return "Enter a valid email, like name@example.com, or a phone number with area code.";
+        if (v.includes("@") && !isEmail) return t("emailBad");
+        if (!isEmail && !isPhone) return t("contactBad");
         state.contact = v;
         const btn = form.querySelector(".primary");
         const label = btn.textContent;
-        btn.disabled = true; btn.textContent = state.editing ? "Saving your changes…" : "Sending your RSVP…";
+        btn.disabled = true; btn.textContent = state.editing ? t("savingChanges") : t("sendingRsvp");
         const result = await submitRSVP();
         if (result === "exists") {
           btn.disabled = false; btn.textContent = label;
-          return "There's already an RSVP under this name. Go back to the start and tap \"Already RSVP'd? Find my RSVP\" to see or change it.";
+          return t("existsErr");
         }
         if (result !== "ok") {
           btn.disabled = false; btn.textContent = label;
-          return state.editing ? "Your changes didn't save. Check your connection and try again."
-                               : "Your RSVP didn't send. Check your connection and try again.";
+          return state.editing ? t("saveFailed") : t("sendFailed");
         }
         state.justUpdated = !!state.editing;
         if (state.sunrise === "yes") go("endSunrise");
@@ -701,17 +883,17 @@ const steps = {
   },
 
   lookup() {
-    formStep("Already RSVP'd? Let's find you.", "Enter the full name you used on your RSVP.",
-      field("lookupName", "Full name", "text", 'autocomplete="name"'),
-      "Find my RSVP", async (f, box) => {
+    formStep(t("lookupQ"), t("lookupHint"),
+      field("lookupName", t("fullName"), "text", 'autocomplete="name"'),
+      t("findBtn"), async (f, box) => {
         const v = f.lookupName.value.trim();
-        if (!v) return "Enter your full name to continue.";
+        if (!v) return t("nameErr");
         const btn = box.querySelector(".primary");
-        btn.disabled = true; btn.textContent = "Finding your RSVP…";
+        btn.disabled = true; btn.textContent = t("finding");
         const r = await api({ action: "find", name: v });
-        btn.disabled = false; btn.textContent = "Find my RSVP";
-        if (!r || !r.ok) return "We couldn't check right now. Check your connection and try again.";
-        if (!r.found) return "We couldn't find an RSVP under that name. Check the spelling, or go back to RSVP now.";
+        btn.disabled = false; btn.textContent = t("findBtn");
+        if (!r || !r.ok) return t("netErr");
+        if (!r.found) return t("notFound");
         state.lookupName = v; state.lookupResult = r; state.foundVia = "lookup";
         go("found");
       });
@@ -720,16 +902,16 @@ const steps = {
   found() {
     const r = state.lookupResult;
     const fromName = state.foundVia === "name";
-    const hi = fromName ? "Looks like you've already RSVP'd!" : `Welcome back, ${esc(r.firstName)}!`;
-    const whose = `We found an RSVP under ${esc(state.lookupName)}.`;
+    const hi = fromName ? t("alreadyQ") : t("welcomeBack", { name: esc(r.firstName) });
+    const who = esc(state.lookupName);
     if (r.status === "cancelled") {
-      choiceStep("foundAction", hi, `${fromName ? whose + " It" : "Your RSVP"} is currently cancelled. Want to RSVP again?`,
-        [{ label: "Update my RSVP", value: "edit" }],
+      choiceStep("foundAction", hi, fromName ? t("cancelledUnder", { name: who }) : t("cancelledYours"),
+        [{ label: t("updateRsvp"), value: "edit" }],
         () => { state.editIntent = "restore"; go("verify"); });
       return;
     }
-    choiceStep("foundAction", hi, `${fromName ? whose : "We found your RSVP."} What would you like to do?`,
-      [{ label: "See ceremony information", value: "details" }, { label: "Edit my RSVP", value: "edit" }],
+    choiceStep("foundAction", hi, `${fromName ? t("foundUnder", { name: who }) : t("foundYours")} ${t("whatDo")}`,
+      [{ label: t("seeInfo"), value: "details" }, { label: t("editRsvp"), value: "edit" }],
       v => {
         state.editIntent = v === "edit" ? "menu" : "details";
         go("verify");
@@ -737,17 +919,17 @@ const steps = {
   },
 
   verify() {
-    formStep("Confirm it's you", "To keep your RSVP safe, enter the email or phone number you used on it.",
-      field("verifyContact", "Email or phone", "text", 'autocomplete="email"'),
-      "Continue", async (f, box) => {
+    formStep(t("verifyQ"), t("verifyHint"),
+      field("verifyContact", t("contactLabel"), "text", 'autocomplete="email"'),
+      t("continue"), async (f, box) => {
         const v = f.verifyContact.value.trim();
-        if (!v) return "Enter the email or phone number from your RSVP.";
+        if (!v) return t("verifyEmpty");
         const btn = box.querySelector(".primary");
-        btn.disabled = true; btn.textContent = "Checking…";
+        btn.disabled = true; btn.textContent = t("checking");
         const r = await api({ action: "verify", name: state.lookupName, contact: v });
-        btn.disabled = false; btn.textContent = "Continue";
-        if (!r || !r.ok) return "We couldn't check right now. Check your connection and try again.";
-        if (!r.match) return "That doesn't match the email or phone number on this RSVP.";
+        btn.disabled = false; btn.textContent = t("continue");
+        if (!r || !r.ok) return t("netErr");
+        if (!r.match) return t("noMatch");
         if (state.editIntent === "details") {
           state.justUpdated = false;
           const a = attendingOf(r.record);
@@ -761,15 +943,14 @@ const steps = {
   },
 
   editMenu() {
-    choiceStep("editChoice", "What would you like to change?", "",
-      [{ label: "My significant other and kids", value: "guests" }, { label: "Cancel my RSVP", value: "cancel" }],
+    choiceStep("editChoice", t("editQ"), "",
+      [{ label: t("editGuests"), value: "guests" }, { label: t("cancelRsvp"), value: "cancel" }],
       v => go(v === "guests" ? "partner" : "cancelConfirm"));
   },
 
   cancelConfirm() {
-    choiceStep("cancelChoice", "Cancel your RSVP?",
-      `This frees up your spot. You can come back and RSVP again before ${esc(CONFIG.rsvpDeadline)}.`,
-      [{ label: "Yes, cancel my RSVP", value: "yes" }, { label: "No, keep my RSVP", value: "no" }],
+    choiceStep("cancelChoice", t("cancelQ"), t("cancelHint", { date: esc(L(CONFIG.rsvpDeadline)) }),
+      [{ label: t("cancelYes"), value: "yes" }, { label: t("cancelNo"), value: "no" }],
       async v => {
         if (v === "no") { back(); return; }
         stage.querySelectorAll(".choice").forEach(b => { b.disabled = true; });
@@ -778,34 +959,34 @@ const steps = {
         stage.querySelectorAll(".choice").forEach(b => { b.disabled = false; });
         let err = stage.querySelector(".error");
         if (!err) { err = document.createElement("p"); err.className = "error"; err.setAttribute("role", "alert"); err.style.marginTop = "14px"; stage.appendChild(err); }
-        err.textContent = "Your RSVP wasn't cancelled. Check your connection and try again.";
+        err.textContent = t("cancelFailed");
       });
   },
 
   endCancelled() {
     const href = isPlaceholder(CONFIG.registryUrl) ? "#" : esc(CONFIG.registryUrl);
-    stage.innerHTML = `<h1 tabindex="-1">Your RSVP has been cancelled.</h1>
-      <p class="lede">We'll miss you! If you'd like to send love from afar, here's our registry.</p>
-      <a class="primary" href="${href}" target="_blank" rel="noopener" style="margin-top:20px">Open our registry</a>
-      <div class="later-note"><p class="later-year">Coming 2030</p><p>Don't worry, a traditional Catholic wedding is on the way!</p></div>`;
+    stage.innerHTML = `<h1 tabindex="-1">${t("cancelledTitle")}</h1>
+      <p class="lede">${t("missYouRegistry")}</p>
+      <a class="primary" href="${href}" target="_blank" rel="noopener" style="margin-top:20px">${t("openRegistry")}</a>
+      <div class="later-note"><p class="later-year">${t("coming2030")}</p><p>${t("catholic")}</p></div>`;
   },
 
   endSunrise() {
-    stage.innerHTML = hero("endSunrise", "50% 85%") + `<h1 tabindex="-1">See you at sunrise!</h1>` + updatedNote() +
-      detail("Ceremony", CONFIG.ceremony) + detail("Celebration", CONFIG.celebration);
+    stage.innerHTML = hero("endSunrise", "50% 85%") + `<h1 tabindex="-1">${t("seeYou")}</h1>` + updatedNote() +
+      detail(t("ceremony"), CONFIG.ceremony) + detail(t("celebration"), CONFIG.celebration);
   },
 
   endCelebrate() {
-    stage.innerHTML = `<h1 tabindex="-1">Can't wait to celebrate with you!</h1>` + updatedNote() +
-      detail("Celebration", CONFIG.celebration);
+    stage.innerHTML = `<h1 tabindex="-1">${t("celebrateTitle")}</h1>` + updatedNote() +
+      detail(t("celebration"), CONFIG.celebration);
   },
 
   endAway() {
     const href = isPlaceholder(CONFIG.registryUrl) ? "#" : esc(CONFIG.registryUrl);
-    stage.innerHTML = `<h1 tabindex="-1">We'll miss you!</h1>${updatedNote()}
-      <p class="lede">If you'd like to send love from afar, here's our registry.</p>
-      <a class="primary" href="${href}" target="_blank" rel="noopener" style="margin-top:20px">Open our registry</a>
-      <div class="later-note"><p class="later-year">Coming 2030</p><p>Don't worry, a traditional Catholic wedding is on the way!</p></div>`;
+    stage.innerHTML = `<h1 tabindex="-1">${t("missYou")}</h1>${updatedNote()}
+      <p class="lede">${t("registryLede")}</p>
+      <a class="primary" href="${href}" target="_blank" rel="noopener" style="margin-top:20px">${t("openRegistry")}</a>
+      <div class="later-note"><p class="later-year">${t("coming2030")}</p><p>${t("catholic")}</p></div>`;
   }
 };
 
