@@ -667,8 +667,7 @@ function localApi(req) {
   try { localStorage.setItem("rsvpTestRows", JSON.stringify(rows)); } catch {}
   return JSON.parse(JSON.stringify(out));
 }
-let api = async function (req) {
-  if (!CONFIG.rsvpApiUrl) { await new Promise(r => setTimeout(r, 250)); return localApi(req); }
+async function callSheet(req) {
   try {
     const res = await fetch(CONFIG.rsvpApiUrl, {
       method: "POST",
@@ -677,6 +676,16 @@ let api = async function (req) {
     });
     return await res.json();
   } catch { return { ok: false, error: "network" }; }
+}
+let api = async function (req) {
+  if (!CONFIG.rsvpApiUrl) { await new Promise(r => setTimeout(r, 250)); return localApi(req); }
+  // If Google is slow or busy, quietly try again (up to 2 more times) before showing an error.
+  let res = await callSheet(req);
+  for (let i = 0; i < 2 && res && !res.ok && ["network", "busy"].includes(res.error); i++) {
+    await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+    res = await callSheet(req);
+  }
+  return res;
 };
 
 function rsvpPayload() {
