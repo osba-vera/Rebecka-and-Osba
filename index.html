@@ -229,6 +229,7 @@
     color: var(--ink); border-color: var(--field-line); background: var(--choice-bg);
     text-decoration: none; font-weight: 500;
   }
+  .slow { margin: 4px 0 0; font-size: .92rem; }
   .preview-bar {
     position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10;
     background: #304B3A; color: #F8F6EF; border-radius: 999px;
@@ -314,7 +315,7 @@ const CONFIG = {
   registryUrl: "[REGISTRY LINK]",
   // Your Google Sheet connection (see the setup steps). Paste the Web app URL here.
   // Leave empty to test: RSVPs are then saved only in this browser.
-  rsvpApiUrl: "https://script.google.com/macros/s/AKfycbxH5AGliaRgGPrNCko0n5lP9dthkIfS4nDXHuVVJ9mpcB7juoraBrhHhVKwUy6h478HAQ/exec"
+  rsvpApiUrl: "https://script.google.com/macros/s/AKfycbx5FgLctGH6iBf0szJWK-41WXnqvmMy_k0ijMl9LZD1qoAxUGXxr1Pfc6I-ENHzT-SQjg/exec"
 };
 
 /* ============================================================ */
@@ -322,6 +323,7 @@ const CONFIG = {
 /* ---------- Languages: American English and Mexican Spanish ---------- */
 const TEXT = {
   en: {
+    slow: "Still working… this can take a few seconds. Please keep this page open.",
     back: "← Back", next: "Next", choose: "Choose…", checking: "Checking…", yes: "Yes", no: "No",
     netErr: "We couldn't check right now. Check your connection and try again.",
     weddingOf: "We're getting married!",
@@ -388,6 +390,7 @@ const TEXT = {
     missYou: "We'll miss you!", registryLede: "If you'd like to send love from afar, here's our registry."
   },
   es: {
+    slow: "Seguimos trabajando… esto puede tardar unos segundos. Por favor no cierres esta página.",
     back: "← Regresar", next: "Siguiente", choose: "Elige…", checking: "Verificando…", yes: "Sí", no: "No",
     netErr: "No pudimos verificar en este momento. Revisa tu conexión e inténtalo de nuevo.",
     weddingOf: "¡Nos casamos!",
@@ -529,10 +532,30 @@ let show = function (id) {
   steps[id]();
   backBtn.hidden = id === "welcome";
   backBtn.textContent = t("back");
+  saveSession();
   const target = stage.querySelector("input, select") || stage.querySelector("h1, h2");
   if (target) target.focus({ preventScroll: true });
   window.scrollTo({ top: 0 });
 };
+
+/* ---------- Keep a guest's place if the page reloads ----------
+   Progress is kept only in this browser tab and is cleared when the tab is closed. */
+const SESSION_KEY = "rsvpSession";
+let previewing = false;
+function saveSession() {
+  if (previewing) return;
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify({ current, trail, state, at: Date.now() })); } catch {}
+}
+function restoreSession() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+    if (!saved || !steps[saved.current] || Date.now() - saved.at > 12 * 60 * 60 * 1000) return false;
+    Object.assign(state, saved.state || {});
+    trail.push(...(saved.trail || []).filter(id => steps[id]));
+    show(saved.current);
+    return true;
+  } catch { return false; }
+}
 
 function heading(title, hint) {
   return `<h2 id="q" tabindex="-1">${title}</h2>${hint ? `<p class="hint">${hint}</p>` : ""}`;
@@ -563,12 +586,17 @@ function formStep(title, hint, fieldsHtml, btnLabel, onSubmit) {
   const btn = box.querySelector(".primary");
   const els = {};
   box.querySelectorAll("input, select").forEach(i => { els[i.name] = i; });
+  box.querySelectorAll("input").forEach(i => i.addEventListener("input", () => { state[i.name] = i.value; saveSession(); }));
   let busy = false;
   async function submit() {
     if (busy) return;
     busy = true;
     err.hidden = true;
+    const slow = document.createElement("p");
+    slow.className = "hint slow"; slow.setAttribute("role", "status");
+    const timer = setTimeout(() => { slow.textContent = t("slow"); btn.after(slow); }, 2500);
     const message = await onSubmit(els, box);
+    clearTimeout(timer); slow.remove();
     busy = false;
     if (message) { err.textContent = message; err.hidden = false; }
   }
@@ -1003,6 +1031,7 @@ const PREVIEW_PAGES = [
   ["editMenu", "What to change"], ["cancelConfirm", "Cancel RSVP?"], ["endCancelled", "End: RSVP cancelled"]
 ];
 function startPreview() {
+  previewing = true;
   Object.assign(state, {
     guestName: "Ana Ruiz", partner: "yes", partnerName: "Leo Ruiz", kids: "yes", kidsCount: 2, kidsAges: ["4", "7"],
     lookupName: "Ana Ruiz", lookupResult: { ok: true, found: true, firstName: "Ana", status: "active", attending: "sunrise" },
@@ -1021,7 +1050,7 @@ function startPreview() {
 }
 window.addEventListener("DOMContentLoaded", () => {
   if (/[?&]preview\b/.test(location.search)) startPreview();
-  show("welcome");
+  if (previewing || !restoreSession()) show("welcome");
 });
 </script>
 <script>
