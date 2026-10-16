@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3E5446">
 <title>Rebecka &amp; Osbaldo | RSVP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +31,7 @@
   }
 
   * { box-sizing: border-box; }
+  html { background: #3E5446; }
   body {
     margin: 0;
     min-height: 100vh;
@@ -37,12 +39,14 @@
     font-size: 1.05rem;
     line-height: 1.6;
     color: var(--ink);
-    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-low) 100%) fixed;
+    background: #3E5446;
   }
 
   /* Photo background. If the photo is missing, the soft gradient on body shows instead. */
   .photo {
-    position: fixed; inset: 0;
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 100vh; height: 100lvh;
+    min-height: 100%;
     background-size: cover;
     background-repeat: no-repeat;
     pointer-events: none;
@@ -51,7 +55,8 @@
   }
   .photo.is-on { opacity: 1; }
   .scrim {
-    position: fixed; inset: 0; pointer-events: none;
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 100vh; height: 100lvh; pointer-events: none;
     background: linear-gradient(180deg, rgba(48, 75, 58, 0.10) 0%, rgba(48, 75, 58, 0.40) 100%);
   }
 
@@ -208,6 +213,17 @@
     text-transform: uppercase; letter-spacing: .24em;
     color: var(--ink-soft); margin-bottom: 6px;
   }
+  .preview-bar {
+    position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10;
+    background: #304B3A; color: #F8F6EF; border-radius: 999px;
+    padding: 6px 8px 6px 16px; font-size: .9rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25); max-width: calc(100vw - 24px);
+  }
+  .preview-bar label { display: flex; align-items: center; gap: 10px; }
+  .preview-bar select {
+    font: inherit; max-width: 60vw; padding: 8px 10px; border-radius: 999px;
+    border: 0; background: #F8F6EF; color: #000;
+  }
   .error { color: var(--error); font-size: 0.95rem; margin: 0; }
   .error[hidden] { display: none; }
 
@@ -316,7 +332,7 @@ function go(id) { trail.push(current); show(id); }
 function back() { if (trail.length) show(trail.pop()); }
 backBtn.addEventListener("click", back);
 
-function show(id) {
+let show = function (id) {
   current = id;
   setPhoto(id);
   stage.classList.remove("enter"); void stage.offsetWidth; stage.classList.add("enter");
@@ -325,7 +341,7 @@ function show(id) {
   const target = stage.querySelector("input, select") || stage.querySelector("h1, h2");
   if (target) target.focus({ preventScroll: true });
   window.scrollTo({ top: 0 });
-}
+};
 
 function heading(title, hint) {
   return `<h2 id="q" tabindex="-1">${title}</h2>${hint ? `<p class="hint">${hint}</p>` : ""}`;
@@ -430,7 +446,7 @@ function localApi(req) {
   try { localStorage.setItem("rsvpTestRows", JSON.stringify(rows)); } catch {}
   return JSON.parse(JSON.stringify(out));
 }
-async function api(req) {
+let api = async function (req) {
   if (!CONFIG.rsvpApiUrl) { await new Promise(r => setTimeout(r, 250)); return localApi(req); }
   try {
     const res = await fetch(CONFIG.rsvpApiUrl, {
@@ -440,7 +456,7 @@ async function api(req) {
     });
     return await res.json();
   } catch { return { ok: false, error: "network" }; }
-}
+};
 
 function rsvpPayload() {
   return {
@@ -774,7 +790,39 @@ const steps = {
   }
 };
 
-window.addEventListener("DOMContentLoaded", () => show("welcome"));
+/* ---------- Preview mode ----------
+   Add ?preview to the end of the site address (for example rebeckayosbaldo.lol/?preview)
+   to get a "Jump to page" menu. Guests never see it. Nothing is saved while previewing. */
+const PREVIEW_PAGES = [
+  ["welcome", "Welcome"], ["name", "Your name"], ["partner", "Significant other?"],
+  ["partnerName", "Their name"], ["kids", "Bringing kids?"], ["kidsInfo", "Kids and ages"],
+  ["sunrise", "Sunrise ceremony?"], ["sunriseConfirm", "ARE YOU SURE?"], ["sunriseWho", "Who's joining at sunrise"],
+  ["sunriseKids", "Kids at sunrise"], ["celebrate", "Joining the celebration?"], ["contact", "Email or phone"],
+  ["endSunrise", "End: See you at sunrise"], ["endCelebrate", "End: Celebrate with you"], ["endAway", "End: We'll miss you"],
+  ["lookup", "Find my RSVP"], ["found", "Already RSVP'd"], ["verify", "Confirm it's you"],
+  ["editMenu", "What to change"], ["cancelConfirm", "Cancel RSVP?"], ["endCancelled", "End: RSVP cancelled"]
+];
+function startPreview() {
+  Object.assign(state, {
+    guestName: "Ana Ruiz", partner: "yes", partnerName: "Leo Ruiz", kids: "yes", kidsCount: 2, kidsAges: ["4", "7"],
+    lookupName: "Ana Ruiz", lookupResult: { ok: true, found: true, firstName: "Ana", status: "active", attending: "sunrise" },
+    foundVia: "name"
+  });
+  api = async () => ({ ok: true, found: false, match: false });
+  const bar = document.createElement("div");
+  bar.className = "preview-bar";
+  bar.innerHTML = `<label>Preview <select aria-label="Jump to page">${PREVIEW_PAGES.map(([id, label], i) =>
+    `<option value="${id}">${i + 1}. ${label}</option>`).join("")}</select></label>`;
+  document.body.appendChild(bar);
+  const sel = bar.querySelector("select");
+  sel.addEventListener("change", () => { trail.length = 0; show(sel.value); });
+  const realShow = show;
+  show = id => { realShow(id); sel.value = id; };
+}
+window.addEventListener("DOMContentLoaded", () => {
+  if (/[?&]preview\b/.test(location.search)) startPreview();
+  show("welcome");
+});
 </script>
 <script>
 /* Your adventure photos, one per screen (embedded so the site is a single file). */
